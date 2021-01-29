@@ -9,9 +9,20 @@ https://docs.djangoproject.com/en/3.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
+# settings.py
+from dotenv import load_dotenv
+load_dotenv()
 
-from pathlib import Path
+# OR, the same with increased verbosity
+load_dotenv(verbose=True)
 
+# OR, explicitly providing path to '.env'
+from pathlib import Path  # Python 3.6+ only
+env_path = Path('.') / '.env'
+load_dotenv(dotenv_path=env_path)
+
+import os
+DB_PWD = os.getenv("POSTGRE_PWD")
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -54,15 +65,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8080",
-    "http://localhost:8001",
-    "http://127.0.0.1:8000"
-]
+CORS_ALLOW_ALL = False
+CORS_ORIGIN_WHITELIST = (
+    'http://localhost:3000',
+)
 
 ROOT_URLCONF = 'contactsapi.urls'
-CSRF_COOKIE_SECURE = False
-CSRF_COOKIE_HTTPONLY=False
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -87,8 +95,12 @@ WSGI_APPLICATION = 'contactsapi.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'contactsdb',
+        'USER': 'postgres',
+        'PASSWORD': DB_PWD,
+        'HOST': '127.0.0.1',
+        'PORT': '8000',
     }
 }
 
