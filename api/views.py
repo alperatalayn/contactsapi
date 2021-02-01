@@ -47,6 +47,7 @@ def updateContact(request,pk):
     try:
         contact = Contact.objects.get(id=pk)
         serializer = ContactSerializer(instance=contact,data=request.data)
+        
         if serializer.is_valid():
             serializer.save()
         return Response(serializer.data) 

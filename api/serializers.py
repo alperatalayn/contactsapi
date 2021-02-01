@@ -43,13 +43,18 @@ class AdressSerializer(serializers.Serializer):
     title = serializers.CharField(max_length=100)
     content = serializers.CharField(max_length=500)
     def create(self, validated_data):
-        return Adress.objects.create(**validated_data)
+        try: 
+            return Adress.objects.create(**validated_data)
+        except:
+            raise Exception("Error while creating adress")
     def update(self, instance, validated_data):
-        instance.title = validated_data.get('title', instance.title)
-        instance.content = validated_data.get('content', instance.content)
-        instance.save()
-        return instance
-
+        try: 
+            instance.title = validated_data.get('title', instance.title)
+            instance.content = validated_data.get('content', instance.content)
+            instance.save()
+            return instance
+        except:
+            raise Exception("Error while updating adress")
 class ContactSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     adresses = AdressSerializer(many=True)
@@ -59,22 +64,32 @@ class ContactSerializer(serializers.Serializer):
     job =  serializers.CharField(default ="",max_length=50)
 
     def create(self, validated_data):
-        adresses_data = validated_data.pop('adresses')
-        contact = Contact.objects.create(**validated_data)
-        for adress_data in adresses_data:
-            Adress.objects.create(contact=contact, **adress_data)
-        return contact
+        try:    
+            adresses_data = validated_data.pop('adresses')
+            contact = Contact.objects.create(**validated_data)
+            for adress_data in adresses_data:
+                Adress.objects.create(contact=contact, **adress_data)
+            return contact
+        except:
+            raise Exception("Error while creating Contact")
     def update(self, instance, validated_data):
-        adresses_data = validated_data.pop('adresses')
-        adresses = instance.adresses
-        instance.first_name = validated_data.get('first_name', instance.first_name)
-        instance.last_name = validated_data.get('last_name', instance.last_name)
-        instance.phone = validated_data.get('phone', instance.phone)
-        instance.job = validated_data.get('job', instance.job)
-        for adress in adresses.all():
-            adress.delete()
-        for adress_data in adresses_data:
-            Adress.objects.create(contact=instance, **adress_data)
-        instance.save()
-
-        return instance
+        try:    
+            adresses_data = validated_data.pop('adresses',instance.adresses)
+            print(adresses_data)
+            instance.first_name = validated_data.get('first_name', instance.first_name)
+            instance.last_name = validated_data.get('last_name', instance.last_name)
+            instance.phone = validated_data.get('phone', instance.phone)
+            instance.job = validated_data.get('job', instance.job)
+            for adress in adresses_data:
+                adress_id = adress.get('id')
+                if (adress_id):
+                    old_adress = Adress.objects.get(id= adress_id, contact=instance)
+                    old_adress.title = adress.get('title', old_adress.title)
+                    old_adress.content = adress.get('content', old_adress.content)
+                    old_adress.save()
+                else:
+                    Adress.objects.create(contact=instance, **adress)
+            instance.save()
+            return instance
+        except:
+            raise Exception("Error while updating contact")
