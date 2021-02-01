@@ -11,36 +11,44 @@ import json
 
 @api_view(['GET'])
 def contactList(request):
-    contacts = Contact.objects.all()
-    print(contacts)
-    serializer = ContactSerializer(contacts, many=True)
-    return Response(serializer.data)
-
+    try:
+        contacts = Contact.objects.all()
+        serializer = ContactSerializer(contacts, many=True)
+        return Response(serializer.data)
+    except:
+        raise Exception("An error occured")
 @api_view(['GET'])
 def contactSingle(request,pk):
-    contacts = Contact.objects.get(id=pk)
-    serializer = ContactSerializer(contacts, many=False)
-    return Response(serializer.data)
-
+    try:
+        contacts = Contact.objects.get(id=pk)
+        serializer = ContactSerializer(contacts, many=False)
+        return Response(serializer.data)
+    except:
+        raise Exception("An error occured")
 @api_view(['POST'])
 def createContact(request):
-    serializer = ContactSerializer(data=request.data)
-    print(request.data)
-    if serializer.is_valid():
-        serializer.save()
-    return Response(serializer.data)
-
+    try:
+        serializer = ContactSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+        return Response(serializer.data)
+    except:
+        raise Exception("An error occured")
 @api_view(['DELETE'])
 def deleteContact(request,pk):
-    contact = Contact.objects.get(id=pk)
-    contact.delete()
-    return Response("deleted")
-    
-
+    try:
+        contact = Contact.objects.get(id=pk)
+        contact.delete()
+        return Response("deleted")
+    except:
+        raise Exception("An error occured")
 @api_view(['POST'])
 def updateContact(request,pk):
-    contact = Contact.objects.get(id=pk)
-    serializer = ContactSerializer(instance=contact,data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-    return Response(serializer.data)
+    try:
+        contact = Contact.objects.get(id=pk)
+        serializer = ContactSerializer(instance=contact,data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+        return Response(serializer.data) 
+    except:
+        raise Exception("An error occured")
