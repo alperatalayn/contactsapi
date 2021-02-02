@@ -1,6 +1,7 @@
 from rest_framework import serializers
+from django.contrib.auth.models import User
 from .models import Contact,Adress
-
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 """
 class AdressSerializer(serializers.ModelSerializer):
     class Meta:
@@ -15,6 +16,7 @@ class ContactSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def create(self, validated_data):
+        print(validated_data)
         adresses_data = validated_data.pop('adresses')
         contact = Contact.objects.create(**validated_data)
         for adress_data in adresses_data:
@@ -35,8 +37,22 @@ class ContactSerializer(serializers.ModelSerializer):
 
         return instance
 """
-
 #Serializers with default library
+class RegisterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('username','password')
+        extra_kwargs = {'password':{'write_only':True}}
+    def create(self,validated_data):
+        try:    
+            password = validated_data.pop('password',None)
+            instance = self.Meta.model(**validated_data)
+            if password is not None:
+                instance.set_password(password)
+            instance.save()
+            return instance
+        except:
+            raise Exception("Error while creating user")
 
 class AdressSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
