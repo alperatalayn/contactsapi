@@ -9,5 +9,5 @@ urlpatterns = [
     path('delete/<str:pk>',views.deleteContact,name="delete"),
     path('register/',views.createUser),
     path('token/',TokenObtainPairView.as_view()),
-    path('token/refresh',TokenRefreshView.as_view()),
+    path('token/refresh/',TokenRefreshView.as_view()),
 ]
