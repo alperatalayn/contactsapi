@@ -53,12 +53,15 @@ def deleteContact(request,pk):
 def updateContact(request,pk):
     try:
         contact = Contact.objects.get(id=pk)
-        serializer = ContactSerializer(instance=contact,data=request.data)
-        serializer.update(instance= contact,validated_data=request.data)
+        if(IsOwnerOrAdmin.has_object_permission(IsOwnerOrAdmin,request=request,view=updateContact,obj= contact)):
+            serializer = ContactSerializer(instance=contact,data=request.data)
+            serializer.update(instance= contact,validated_data=request.data)
         
-        if serializer.is_valid():
-            serializer.save()
-        return Response(serializer.data) 
+            if serializer.is_valid():
+                serializer.save()
+            return Response(serializer.data) 
+        else:
+            return Response(status= status.HTTP_403_FORBIDDEN)
     except:
         raise Exception("An error occured")
 
