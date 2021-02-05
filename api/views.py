@@ -15,14 +15,28 @@ from reportlab.lib.pagesizes import letter, A4
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter, inch
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.lib.units import inch
+import datetime
 
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def pdfReport(request):
+    A4Width = 8.27*inch
+    A4Height = 11.75*inch
     try:
         buffer = io.BytesIO()
         pdf = canvas.Canvas(buffer)
+        pdf.setFillColorRGB(0,123/255,1)
+        pdf.rect(0,A4Height*9/10,A4Width,A4Height/10, fill=1)
+        pdf.drawImage("https://i.pinimg.com/originals/de/88/3d/de883d1773dd0660f97e85136a626b4e.png",0 ,A4Height*9/10 ,width=A4Height*1/10, height=A4Height*1/10)
+        textobject = pdf.beginText()
+        textobject.setTextOrigin(2/10*A4Height, A4Height*18.75/20)
+        textobject.setFont("Helvetica", 40)
+        textobject.setFillColorRGB(1,1,1)
+        textobject.textLines("Rapor Basligi")
+        pdf.drawText(textobject)
+
         data = [["Ad","Soyad","Telefon No."]]
         if request.user.is_superuser: 
             contacts = Contact.objects.all()
@@ -60,7 +74,15 @@ def pdfReport(request):
             )
         table.setStyle(ts)
         table.wrapOn(pdf,1,1)
-        table.drawOn(pdf,10,832-table._height)
+        table.drawOn(pdf,10,(A4Height*9/10-table._height-10))
+        currenttime=datetime.datetime.now().strftime("%c")
+        info =  "Bu rapor firma.com tarafindan " + currenttime + " Tarihinde olusturuldu"
+        footer = pdf.beginText()
+        footer.setTextOrigin(0.3*inch, .3*inch)
+        footer.setFont("Helvetica", 16)
+        footer.setFillColorRGB(0,0,0)
+        footer.textLines(info)
+        pdf.drawText(footer)
         pdf.showPage()
         pdf.save()
         buffer.seek(0)
