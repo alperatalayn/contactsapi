@@ -18,7 +18,6 @@ class ContactSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def create(self, validated_data):
-        print(validated_data)
         adresses_data = validated_data.pop('adresses')
         contact = Contact.objects.create(**validated_data)
         for adress_data in adresses_data:
@@ -83,8 +82,7 @@ class ContactSerializer(serializers.Serializer):
     def create(self, validated_data,owner):
         try:    
             adresses_data = validated_data.pop('adresses')
-            contact = Contact.objects.create(owner=owner,**validated_data)        
-            print(validated_data)
+            contact = Contact.objects.create(owner=owner,**validated_data)
             for adress_data in adresses_data:
                 Adress.objects.create(contact=contact, title=adress_data.get("title"),content=adress_data.get("content"))
             return contact
@@ -98,10 +96,8 @@ class ContactSerializer(serializers.Serializer):
             instance.phone = validated_data.get('phone', instance.phone)
             instance.job = validated_data.get('job', instance.job)
             for adress in adresses_data:
-                print(adress)
                 adress_id = adress.get("id")
                 if (adress_id):
-                    print("geldim")
                     old_adress = Adress.objects.get(id= adress_id, contact=instance)
                     old_adress.title = adress.get("title")
                     old_adress.content = adress.get("content")

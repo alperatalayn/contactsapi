@@ -139,7 +139,6 @@ def updateContact(request,pk):
         if(IsOwnerOrAdmin.has_object_permission(IsOwnerOrAdmin,request=request,view=updateContact,obj= contact)):
             serializer = ContactSerializer(data=request.data)        
             if serializer.is_valid():
-                print(serializer.data)
                 serializer.update(instance= contact,validated_data=serializer.data)
             else: 
                 for error in serializer.errors:
