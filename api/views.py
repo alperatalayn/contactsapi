@@ -8,6 +8,7 @@ from rest_framework import status, views
 from .models import Contact
 from .serializers import ContactSerializer, RegisterSerializer
 import json
+from users.serializers import CustomUserSerializer
 import io
 from django.http import FileResponse
 from reportlab.pdfgen import canvas
@@ -108,10 +109,13 @@ def contactList(request):
 
 def createContact(request):
     try:
+        request.data
         serializer = ContactSerializer(data=request.data)
-        serializer.create(validated_data=request.data,user=request.user)
         if serializer.is_valid():
-            serializer.save()
+            serializer.create(validated_data=serializer.data,owner=request.user)
+        else:
+            for error in serializer.errors:
+                return Response(status=status.HTTP_406_NOT_ACCEPTABLE, data=error)        
         return Response(serializer.data)
     except:
         raise Exception("An error occured")
@@ -133,11 +137,13 @@ def updateContact(request,pk):
     try:
         contact = Contact.objects.get(id=pk)
         if(IsOwnerOrAdmin.has_object_permission(IsOwnerOrAdmin,request=request,view=updateContact,obj= contact)):
-            serializer = ContactSerializer(instance=contact,data=request.data)
-            serializer.update(instance= contact,validated_data=request.data)
-        
+            serializer = ContactSerializer(data=request.data)        
             if serializer.is_valid():
-                serializer.save()
+                print(serializer.data)
+                serializer.update(instance= contact,validated_data=serializer.data)
+            else: 
+                for error in serializer.errors:
+                    return Response(status=status.HTTP_406_NOT_ACCEPTABLE, data=error)  
             return Response(serializer.data) 
         else:
             return Response(status= status.HTTP_403_FORBIDDEN)

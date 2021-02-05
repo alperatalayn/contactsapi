@@ -61,7 +61,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         except:
             raise Exception("Error while creating user")
 class AdressSerializer(serializers.Serializer):
-    id =serializers.IntegerField()
+    id =serializers.IntegerField(allow_null=True,required=False)
     title = serializers.CharField(max_length=100)
     content = serializers.CharField(max_length=500)
     def update(self, instance, validated_data):
@@ -73,18 +73,18 @@ class AdressSerializer(serializers.Serializer):
         except:
             raise Exception("Error while updating adress")
 class ContactSerializer(serializers.Serializer):
-    id =serializers.IntegerField()
-    adresses = AdressSerializer(many=True)
-    owner = CustomUserSerializer(many=False)
-    first_name = serializers.CharField(default ="",max_length=50)
+    id =serializers.IntegerField(allow_null=True,required=False)
+    adresses = AdressSerializer(many=True,required=False,allow_null=True)
+    owner = CustomUserSerializer(many=False,required=False)
+    first_name = serializers.CharField(required = True, max_length=50)
     last_name = serializers.CharField(default ="",max_length=50)
     phone = serializers.CharField(default ="",max_length=20)
     job =  serializers.CharField(default ="",max_length=50)
-    def create(self, validated_data,user):
+    def create(self, validated_data,owner):
         try:    
             adresses_data = validated_data.pop('adresses')
-            contact = Contact.objects.create(owner=user,**validated_data)
-            print(contact.owner_id)
+            contact = Contact.objects.create(owner=owner,**validated_data)        
+            print(validated_data)
             for adress_data in adresses_data:
                 Adress.objects.create(contact=contact, title=adress_data.get("title"),content=adress_data.get("content"))
             return contact
@@ -92,14 +92,16 @@ class ContactSerializer(serializers.Serializer):
             raise Exception("Error while creating Contact")
     def update(self, instance, validated_data):
         try:    
-            adresses_data = validated_data.pop('adresses',instance.adresses)
+            adresses_data = validated_data.pop('adresses')
             instance.first_name = validated_data.get('first_name', instance.first_name)
             instance.last_name = validated_data.get('last_name', instance.last_name)
             instance.phone = validated_data.get('phone', instance.phone)
             instance.job = validated_data.get('job', instance.job)
             for adress in adresses_data:
+                print(adress)
                 adress_id = adress.get("id")
                 if (adress_id):
+                    print("geldim")
                     old_adress = Adress.objects.get(id= adress_id, contact=instance)
                     old_adress.title = adress.get("title")
                     old_adress.content = adress.get("content")
